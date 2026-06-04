@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thai Gold API Profit Tracker</title>
+    <title>Thai Gold Profit Tracker (Scraper Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -47,7 +47,6 @@
             -webkit-backdrop-filter: blur(12px);
         }
 
-        /* Refined multi-layered shadow for premium "pop" */
         .text-pop {
             text-shadow:
                 0 4px 12px rgba(0, 0, 0, 0.25),
@@ -77,7 +76,6 @@
     <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
         <div class="w-full max-w-4xl space-y-6 lg:space-y-8">
 
-            <!-- Header Section -->
             <header class="text-center space-y-2 mb-2">
                 <div
                     class="inline-flex p-3 rounded-2xl gold-gradient shadow-lg mb-2 transform transition hover:scale-105">
@@ -88,13 +86,10 @@
                 <p class="text-slate-500 text-sm sm:text-base font-medium">Real-time THB Valuation & Profit Analysis</p>
             </header>
 
-            <!-- Main Grid Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                <!-- Left Column: Market & Portfolio -->
                 <div class="lg:col-span-7 space-y-6">
 
-                    <!-- Market Price Card -->
                     <div
                         class="card-blur rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border border-white relative overflow-hidden transition-all-custom hover:shadow-amber-100/50">
                         <div class="flex justify-between items-center mb-8">
@@ -102,7 +97,7 @@
                                 <span
                                     class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    Live Market Price
+                                    Live Scraped Price
                                 </span>
                                 <div class="flex flex-col">
                                     <h2 id="lastUpdated" class="text-xs sm:text-sm text-slate-400 font-medium italic">
@@ -139,13 +134,11 @@
                         </div>
                     </div>
 
-                    <!-- Profit Card -->
                     <div
                         class="gold-gradient rounded-[2.5rem] p-8 sm:p-10 shadow-2xl text-white relative overflow-hidden group">
                         <div
                             class="absolute -top-10 -right-10 bg-white/10 blur-3xl w-48 h-48 rounded-full group-hover:scale-110 transition-transform duration-700">
                         </div>
-
                         <div class="relative z-10 text-pop">
                             <p class="text-xs sm:text-sm opacity-90 font-bold uppercase tracking-[0.2em] mb-3">Net
                                 Profit / Loss Status</p>
@@ -160,7 +153,6 @@
                                     <span class="text-xl sm:text-2xl font-bold opacity-80">THB</span>
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-white/20">
                                 <div class="space-y-1">
                                     <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Current
@@ -177,7 +169,6 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Breakdown -->
                 <div class="lg:col-span-5 space-y-6">
                     <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 h-full">
                         <div class="flex items-center gap-3 mb-8">
@@ -187,7 +178,6 @@
                         </div>
 
                         <div class="space-y-8">
-                            <!-- Asset Items -->
                             <div
                                 class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-4">
@@ -203,7 +193,6 @@
                                     <p class="text-sm font-bold text-slate-800">฿137,250</p>
                                 </div>
                             </div>
-
                             <div class="h-px bg-slate-100"></div>
 
                             <div
@@ -221,8 +210,8 @@
                                     <p class="text-sm font-bold text-slate-800">฿122,920</p>
                                 </div>
                             </div>
-
                             <div class="h-px bg-slate-100"></div>
+
                             <div
                                 class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-4">
@@ -255,21 +244,20 @@
             </div>
 
             <footer class="pt-8 pb-4 text-center space-y-2">
-                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data
-                    provided by Thai Gold Association via chnwt.dev</p>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Scraping live data
+                    from xn--42cah7d0cxcvbbb9x.com</p>
             </footer>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://api.chnwt.dev/thai-gold-api/latest";
+        // Target website and CORS proxy to bypass browser restrictions
+        const TARGET_URL = "https://xn--42cah7d0cxcvbbb9x.com/";
+        const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(TARGET_URL)}`;
 
-        const amount1 = 3;
-        const price1 = 45750;
-        const amount2 = 2;
-        const price2 = 61460;
-        const amount3 = 1;
-        const price3 = 67550;
+        const amount1 = 3; const price1 = 45750;
+        const amount2 = 2; const price2 = 61460;
+        const amount3 = 1; const price3 = 67550;
         const totalAmount = amount1 + amount2 + amount3;
         const totalCost = (price1 * amount1) + (price2 * amount2) + (price3 * amount3);
 
@@ -291,30 +279,61 @@
 
             for (let i = 0; i <= retryDelays.length; i++) {
                 try {
-                    const response = await fetch(API_URL);
+                    const response = await fetch(PROXY_URL);
                     if (!response.ok) throw new Error('Network response error');
+
                     const result = await response.json();
 
-                    if (result.status === "success" && result.response && result.response.price) {
-                        const goldBar = result.response.price.gold_bar;
-                        const buy = parseFloat(goldBar.buy.replace(/,/g, ''));
-                        const sell = parseFloat(goldBar.sell.replace(/,/g, ''));
-                        const updateTime = result.response.date;
+                    // Parse the HTML string returned by the proxy
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(result.contents, 'text/html');
 
-                        if (!isNaN(buy) && !isNaN(sell)) {
-                            updateDashboard(buy, sell, updateTime);
-                            setLoading(false);
-                            showStatus("Prices synchronized successfully", "success");
-                            return;
+                    // Using the CSS selectors you provided
+                    const buySelector = '#rightCol > div.divgta.goldshopf > table > tbody > tr:nth-child(1) > td:nth-child(2)';
+                    const sellSelector = '#rightCol > div.divgta.goldshopf > table > tbody > tr:nth-child(1) > td:nth-child(3)';
+
+                    const buyElement = doc.querySelector(buySelector);
+                    const sellElement = doc.querySelector(sellSelector);
+
+                    // Fallback for time if a specific selector isn't provided
+                    const timeElement = doc.querySelector('#rightCol > div.divgta.goldshopf > div > span');
+
+                    if (!buyElement || !sellElement) {
+                        // Sometimes DOMParser omits <tbody> if the HTML isn't perfectly structured. 
+                        // We can try a fallback selector just in case.
+                        const fallbackBuy = doc.querySelector('#rightCol > div.divgta.goldshopf > table tr:nth-child(1) > td:nth-child(2)');
+                        const fallbackSell = doc.querySelector('#rightCol > div.divgta.goldshopf > table tr:nth-child(1) > td:nth-child(3)');
+
+                        if (!fallbackBuy || !fallbackSell) {
+                            throw new Error('Could not find price elements. The website structure may have changed.');
                         }
+
+                        var buyText = fallbackBuy.innerText.replace(/,/g, '').replace(/[^\d.-]/g, '');
+                        var sellText = fallbackSell.innerText.replace(/,/g, '').replace(/[^\d.-]/g, '');
+                    } else {
+                        var buyText = buyElement.innerText.replace(/,/g, '').replace(/[^\d.-]/g, '');
+                        var sellText = sellElement.innerText.replace(/,/g, '').replace(/[^\d.-]/g, '');
                     }
-                    throw new Error('API format mismatch');
+
+                    const updateTime = timeElement ? timeElement.innerText.trim() : new Date().toLocaleTimeString();
+
+                    const buy = parseFloat(buyText);
+                    const sell = parseFloat(sellText);
+
+                    if (!isNaN(buy) && !isNaN(sell)) {
+                        updateDashboard(buy, sell, updateTime);
+                        setLoading(false);
+                        showStatus("Prices scraped successfully", "success");
+                        return;
+                    }
+                    throw new Error('Could not parse valid numbers from the targeted elements');
                 } catch (error) {
                     if (i < retryDelays.length) {
                         await new Promise(res => setTimeout(res, retryDelays[i]));
                     } else {
                         setLoading(false);
-                        showStatus("Connection failed. Retrying later...", "error");
+                        console.error(error);
+                        showStatus("Scraping failed. Check selectors or proxy.", "error");
                     }
                 }
             }
@@ -336,7 +355,6 @@
             const now = new Date();
             syncTimeEl.innerText = `Local Sync: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
 
-            // Handle Icon and Color logic
             if (profit >= 0) {
                 profitEl.className = "text-5xl sm:text-7xl font-black tracking-tighter profit-positive text-pop";
                 profitIcon.className = "fas fa-arrow-trend-up text-emerald-400 drop-shadow-md";
