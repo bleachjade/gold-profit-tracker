@@ -87,7 +87,7 @@
                             <div class="space-y-1">
                                 <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    Live Market Price
+                                    Calculated Live Market Price
                                 </span>
                                 <div class="flex flex-col">
                                     <h2 id="lastUpdated" class="text-xs sm:text-sm text-slate-400 font-medium italic">Syncing data...</h2>
@@ -237,13 +237,19 @@
             </div>
 
             <footer class="pt-8 pb-4 text-center space-y-2">
-                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data provided by Thai Gold Association via chnwt.dev</p>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data from Swissquote | Rates via ER-API</p>
             </footer>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://api.chnwt.dev/thai-gold-api/latest";
+        // Use Swissquote for global Gold Spot Price
+        const XAU_API_URL = "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD";
+        // Free and reliable endpoint to fetch the required USD/THB exchange rate
+        const FX_API_URL = "https://open.er-api.com/v6/latest/USD";
+        
+        // Formula Constant
+        const CONVERSION_CONSTANT = 0.4753;
 
         const amount1 = 3; const price1 = 45750;
         const amount2 = 2; const price2 = 61460;
@@ -275,24 +281,39 @@
 
             for (let i = 0; i <= retryDelays.length; i++) {
                 try {
-                    const response = await fetch(API_URL);
-                    if (!response.ok) throw new Error('Network response error');
-                    const result = await response.json();
+                    // Fetch global XAU/USD Spot Price from Swissquote
+                    const xauResponse = await fetch(XAU_API_URL);
+                    if (!xauResponse.ok) throw new Error('XAU API Network response error');
+                    const xauData = await xauResponse.json();
+                    
+                    // Fetch USD/THB Exchange Rate
+                    const fxResponse = await fetch(FX_API_URL);
+                    if (!fxResponse.ok) throw new Error('FX API Network response error');
+                    const fxData = await fxResponse.json();
+                    
+                    if (xauData && xauData[0] && fxData && fxData.rates) {
+                        // Extract standard spread profile prices from Swissquote response
+                        const standardProfile = xauData[0].spreadProfilePrices.find(p => p.spreadProfile === 'standard') || xauData[0].spreadProfilePrices[0];
+                        
+                        const goldSpotBid = parseFloat(standardProfile.bid);
+                        const goldSpotAsk = parseFloat(standardProfile.ask);
+                        const usdThbRate = parseFloat(fxData.rates.THB);
 
-                    if (result.status === "success" && result.response && result.response.price) {
-                        const goldBar = result.response.price.gold_bar;
-                        const buy = parseFloat(goldBar.buy.replace(/,/g, ''));
-                        const sell = parseFloat(goldBar.sell.replace(/,/g, ''));
-                        const updateTime = result.response.date;
+                        if (!isNaN(goldSpotBid) && !isNaN(goldSpotAsk) && !isNaN(usdThbRate)) {
+                            // Apply the Conversion Formula
+                            const thbGoldBahtBid = goldSpotBid * CONVERSION_CONSTANT * usdThbRate;
+                            const thbGoldBahtAsk = goldSpotAsk * CONVERSION_CONSTANT * usdThbRate;
 
-                        if (!isNaN(buy) && !isNaN(sell)) {
-                            // Populate the manual inputs with the live price to make tweaking easier
-                            manualBuyInput.value = buy;
-                            manualSellInput.value = sell;
+                            // Populate the manual inputs with the calculated live price
+                            manualBuyInput.value = thbGoldBahtBid.toFixed(0);
+                            manualSellInput.value = thbGoldBahtAsk.toFixed(0);
                             
-                            updateDashboard(buy, sell, updateTime);
+                            // Display the base values on the UI for clarity
+                            lastUpdatedEl.innerText = `Spot: $${goldSpotAsk.toFixed(2)} | FX: ฿${usdThbRate.toFixed(3)}`;
+                            
+                            updateDashboard(thbGoldBahtBid, thbGoldBahtAsk);
                             setLoading(false);
-                            showStatus("Prices synchronized successfully", "success");
+                            showStatus("Prices calculated & synced successfully", "success");
                             return;
                         }
                     }
@@ -318,23 +339,24 @@
                 return;
             }
 
-            updateDashboard(customBuy, customSell, "Manual Override");
+            lastUpdatedEl.innerText = "Custom Input Applied";
+            updateDashboard(customBuy, customSell);
             showStatus("Custom prices applied", "success");
         });
 
-        function updateDashboard(buy, sell, updateTime) {
+        function updateDashboard(buy, sell) {
             const portfolioValue = buy * totalAmount;
             const profit = portfolioValue - totalCost;
 
-            buyPriceEl.innerText = `฿${buy.toLocaleString()}`;
-            sellPriceEl.innerText = `฿${sell.toLocaleString()}`;
+            // Rounding to nearest Baht for display (Thai Gold is usually displayed as whole numbers)
+            buyPriceEl.innerText = `฿${Math.round(buy).toLocaleString()}`;
+            sellPriceEl.innerText = `฿${Math.round(sell).toLocaleString()}`;
 
             animateValue(profitEl, parseFloat(profitEl.innerText.replace(/,/g, '')) || 0, profit, 1000);
 
-            currentValueEl.innerText = `฿${portfolioValue.toLocaleString()}`;
+            currentValueEl.innerText = `฿${portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
             initialCostEl.innerText = `฿${totalCost.toLocaleString()}`;
 
-            lastUpdatedEl.innerText = `Update: ${updateTime}`;
             const now = new Date();
             syncTimeEl.innerText = `Local Sync: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
 
