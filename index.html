@@ -28,9 +28,17 @@
         }
 
         @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .card-blur {
@@ -45,21 +53,30 @@
                 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .profit-positive { color: #ffffff; }
-        .profit-negative { color: #ffe4e6; }
+        .profit-positive {
+            color: #ffffff;
+        }
+
+        .profit-negative {
+            color: #ffe4e6;
+        }
 
         .transition-all-custom {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        html, body { overscroll-behavior-y: contain; }
-        
+        html,
+        body {
+            overscroll-behavior-y: contain;
+        }
+
         /* Hide arrows on number inputs */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
+
         input[type="number"] {
             -moz-appearance: textfield;
         }
@@ -71,10 +88,12 @@
         <div class="w-full max-w-4xl space-y-6 lg:space-y-8">
 
             <header class="text-center space-y-2 mb-2">
-                <div class="inline-flex p-3 rounded-2xl gold-gradient shadow-lg mb-2 transform transition hover:scale-105">
+                <div
+                    class="inline-flex p-3 rounded-2xl gold-gradient shadow-lg mb-2 transform transition hover:scale-105">
                     <i class="fas fa-coins text-2xl sm:text-3xl text-white drop-shadow-md"></i>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Gold Portfolio Tracker</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Gold Portfolio Tracker
+                </h1>
                 <p class="text-slate-500 text-sm sm:text-base font-medium">Real-time THB Valuation & Profit Analysis</p>
             </header>
 
@@ -82,76 +101,106 @@
 
                 <div class="lg:col-span-7 space-y-6">
 
-                    <div class="card-blur rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border border-white relative overflow-hidden transition-all-custom hover:shadow-amber-100/50">
+                    <div
+                        class="card-blur rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border border-white relative overflow-hidden transition-all-custom hover:shadow-amber-100/50">
                         <div class="flex justify-between items-center mb-8">
                             <div class="space-y-1">
-                                <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
+                                <span
+                                    class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
                                     Calculated Live Market Price
                                 </span>
                                 <div class="flex flex-col">
-                                    <h2 id="lastUpdated" class="text-xs sm:text-sm text-slate-400 font-medium italic">Syncing data...</h2>
-                                    <h2 id="syncTime" class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight"></h2>
+                                    <h2 id="lastUpdated" class="text-xs sm:text-sm text-slate-400 font-medium italic">
+                                        Syncing data...</h2>
+                                    <h2 id="syncTime"
+                                        class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight">
+                                    </h2>
                                 </div>
                             </div>
-                            <button id="refreshBtn" class="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-600 hover:bg-amber-500 hover:text-white transition-all active:scale-90 shadow-sm group" title="Fetch API Data">
-                                <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-500" id="refreshIcon"></i>
+                            <button id="refreshBtn"
+                                class="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-600 hover:bg-amber-500 hover:text-white transition-all active:scale-90 shadow-sm group"
+                                title="Fetch API Data">
+                                <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-500"
+                                    id="refreshIcon"></i>
                             </button>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
-                            <div class="bg-rose-50/60 p-5 rounded-3xl border border-rose-100 flex flex-col items-center justify-center text-center">
-                                <p class="text-[10px] sm:text-xs text-rose-500 font-bold uppercase mb-2 tracking-tighter">Buy (รับซื้อ)</p>
-                                <p id="buyPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">---</p>
+                            <div
+                                class="bg-rose-50/60 p-5 rounded-3xl border border-rose-100 flex flex-col items-center justify-center text-center">
+                                <p
+                                    class="text-[10px] sm:text-xs text-rose-500 font-bold uppercase mb-2 tracking-tighter">
+                                    Buy (รับซื้อ)</p>
+                                <p id="buyPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+                                    ---</p>
                             </div>
-                            <div class="bg-emerald-50/60 p-5 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center">
-                                <p class="text-[10px] sm:text-xs text-emerald-500 font-bold uppercase mb-2 tracking-tighter">Sell (ขายออก)</p>
-                                <p id="sellPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">---</p>
+                            <div
+                                class="bg-emerald-50/60 p-5 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center">
+                                <p
+                                    class="text-[10px] sm:text-xs text-emerald-500 font-bold uppercase mb-2 tracking-tighter">
+                                    Sell (ขายออก)</p>
+                                <p id="sellPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+                                    ---</p>
                             </div>
                         </div>
 
                         <div class="pt-6 border-t border-slate-200/60">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <span
+                                    class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                     <i class="fas fa-edit"></i> Manual Override
                                 </span>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <input type="number" id="manualBuy" class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition-all placeholder-slate-300" placeholder="Custom Buy ฿">
+                                    <input type="number" id="manualBuy"
+                                        class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition-all placeholder-slate-300"
+                                        placeholder="Custom Buy ฿">
                                 </div>
                                 <div>
-                                    <input type="number" id="manualSell" class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all placeholder-slate-300" placeholder="Custom Sell ฿">
+                                    <input type="number" id="manualSell"
+                                        class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all placeholder-slate-300"
+                                        placeholder="Custom Sell ฿">
                                 </div>
                             </div>
-                            <button id="applyManualBtn" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white text-xs sm:text-sm font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
+                            <button id="applyManualBtn"
+                                class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white text-xs sm:text-sm font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
                                 Calculate with Custom Prices
                             </button>
                         </div>
                     </div>
 
-                    <div class="gold-gradient rounded-[2.5rem] p-8 sm:p-10 shadow-2xl text-white relative overflow-hidden group">
-                        <div class="absolute -top-10 -right-10 bg-white/10 blur-3xl w-48 h-48 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+                    <div
+                        class="gold-gradient rounded-[2.5rem] p-8 sm:p-10 shadow-2xl text-white relative overflow-hidden group">
+                        <div
+                            class="absolute -top-10 -right-10 bg-white/10 blur-3xl w-48 h-48 rounded-full group-hover:scale-110 transition-transform duration-700">
+                        </div>
 
                         <div class="relative z-10 text-pop">
-                            <p class="text-xs sm:text-sm opacity-90 font-bold uppercase tracking-[0.2em] mb-3">Net Profit / Loss Status</p>
+                            <p class="text-xs sm:text-sm opacity-90 font-bold uppercase tracking-[0.2em] mb-3">Net
+                                Profit / Loss Status</p>
                             <div class="flex items-center gap-4 sm:gap-6 mb-10">
-                                <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
+                                <div
+                                    class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
                                     <i id="profitIcon" class="fas text-3xl sm:text-4xl"></i>
                                 </div>
                                 <div class="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                                    <span class="text-5xl sm:text-7xl font-black tracking-tighter" id="totalProfit">0.00</span>
+                                    <span class="text-5xl sm:text-7xl font-black tracking-tighter"
+                                        id="totalProfit">0.00</span>
                                     <span class="text-xl sm:text-2xl font-bold opacity-80">THB</span>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-white/20">
                                 <div class="space-y-1">
-                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Current Value</span>
+                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Current
+                                        Value</span>
                                     <p id="currentValue" class="text-xl sm:text-2xl font-extrabold">฿0</p>
                                 </div>
                                 <div class="space-y-1">
-                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Initial Cost</span>
+                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Initial
+                                        Cost</span>
                                     <p id="initialCost" class="text-xl sm:text-2xl font-extrabold">฿325,340</p>
                                 </div>
                             </div>
@@ -163,13 +212,17 @@
                     <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 h-full">
                         <div class="flex items-center gap-3 mb-8">
                             <div class="w-1.5 h-6 bg-amber-400 rounded-full"></div>
-                            <h3 class="text-xs sm:text-sm font-extrabold text-slate-400 uppercase tracking-widest">Asset Allocation</h3>
+                            <h3 class="text-xs sm:text-sm font-extrabold text-slate-400 uppercase tracking-widest">Asset
+                                Allocation</h3>
                         </div>
 
                         <div class="space-y-8">
-                            <div class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+                            <div
+                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">3฿</div>
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
+                                        3฿</div>
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-slate-700">Batch A</span>
                                         <span class="text-xs text-slate-400">@45,750 THB</span>
@@ -182,9 +235,12 @@
 
                             <div class="h-px bg-slate-100"></div>
 
-                            <div class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+                            <div
+                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">2฿</div>
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
+                                        2฿</div>
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-slate-700">Batch B</span>
                                         <span class="text-xs text-slate-400">@61,460 THB</span>
@@ -196,9 +252,12 @@
                             </div>
 
                             <div class="h-px bg-slate-100"></div>
-                            <div class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+                            <div
+                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">1฿</div>
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
+                                        1฿</div>
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-slate-700">Batch C</span>
                                         <span class="text-xs text-slate-400">@67,550 THB</span>
@@ -209,9 +268,12 @@
                                 </div>
                             </div>
                             <div class="h-px bg-slate-100"></div>
-                            <div class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+                            <div
+                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">1฿</div>
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
+                                        1฿</div>
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-slate-700">Batch D</span>
                                         <span class="text-xs text-slate-400">@65,170 THB</span>
@@ -233,21 +295,24 @@
                 </div>
             </div>
 
-            <div id="statusBox" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-xs text-center p-4 rounded-2xl text-xs font-bold shadow-2xl transition-all duration-500 transform translate-y-10 opacity-0">
+            <div id="statusBox"
+                class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-xs text-center p-4 rounded-2xl text-xs font-bold shadow-2xl transition-all duration-500 transform translate-y-10 opacity-0">
             </div>
 
             <footer class="pt-8 pb-4 text-center space-y-2">
-                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data from Swissquote | Rates via ER-API</p>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data from
+                    Swissquote | Rates via ER-API</p>
             </footer>
         </div>
     </div>
 
     <script>
-        // Use Swissquote for global Gold Spot Price
-        const XAU_API_URL = "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD";
+        // Replace your existing XAU_API_URL line with this:
+        const targetUrl = encodeURIComponent("https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD");
+        const XAU_API_URL = `https://corsproxy.io/?${targetUrl}`;
         // Free and reliable endpoint to fetch the required USD/THB exchange rate
         const FX_API_URL = "https://open.er-api.com/v6/latest/USD";
-        
+
         // Formula Constant
         const CONVERSION_CONSTANT = 0.4753;
 
@@ -269,7 +334,7 @@
         const refreshBtn = document.getElementById('refreshBtn');
         const refreshIcon = document.getElementById('refreshIcon');
         const statusBox = document.getElementById('statusBox');
-        
+
         // Manual override elements
         const applyManualBtn = document.getElementById('applyManualBtn');
         const manualBuyInput = document.getElementById('manualBuy');
@@ -285,16 +350,16 @@
                     const xauResponse = await fetch(XAU_API_URL);
                     if (!xauResponse.ok) throw new Error('XAU API Network response error');
                     const xauData = await xauResponse.json();
-                    
+
                     // Fetch USD/THB Exchange Rate
                     const fxResponse = await fetch(FX_API_URL);
                     if (!fxResponse.ok) throw new Error('FX API Network response error');
                     const fxData = await fxResponse.json();
-                    
+
                     if (xauData && xauData[0] && fxData && fxData.rates) {
                         // Extract standard spread profile prices from Swissquote response
                         const standardProfile = xauData[0].spreadProfilePrices.find(p => p.spreadProfile === 'standard') || xauData[0].spreadProfilePrices[0];
-                        
+
                         const goldSpotBid = parseFloat(standardProfile.bid);
                         const goldSpotAsk = parseFloat(standardProfile.ask);
                         const usdThbRate = parseFloat(fxData.rates.THB);
@@ -307,10 +372,10 @@
                             // Populate the manual inputs with the calculated live price
                             manualBuyInput.value = thbGoldBahtBid.toFixed(0);
                             manualSellInput.value = thbGoldBahtAsk.toFixed(0);
-                            
+
                             // Display the base values on the UI for clarity
                             lastUpdatedEl.innerText = `Spot: $${goldSpotAsk.toFixed(2)} | FX: ฿${usdThbRate.toFixed(3)}`;
-                            
+
                             updateDashboard(thbGoldBahtBid, thbGoldBahtAsk);
                             setLoading(false);
                             showStatus("Prices calculated & synced successfully", "success");
@@ -328,7 +393,7 @@
                 }
             }
         }
-        
+
         // Handle Manual Price Submission
         applyManualBtn.addEventListener('click', () => {
             const customBuy = parseFloat(manualBuyInput.value);
