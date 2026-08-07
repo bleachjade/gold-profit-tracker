@@ -267,27 +267,11 @@
                                     <p class="text-sm font-bold text-slate-800">฿67,550</p>
                                 </div>
                             </div>
-                            <div class="h-px bg-slate-100"></div>
-                            <div
-                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
-                                        1฿</div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-slate-700">Batch D</span>
-                                        <span class="text-xs text-slate-400">@65,170 THB</span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-bold text-slate-800">฿65,170</p>
-                                </div>
-                            </div>
 
                             <div class="mt-8 pt-8 border-t border-dashed border-slate-200">
                                 <div class="bg-slate-50 rounded-2xl p-4 flex justify-between items-center">
                                     <span class="text-xs font-bold text-slate-500 uppercase">Total Weight</span>
-                                    <span class="text-lg font-black text-slate-800">7.00 Baht</span>
+                                    <span class="text-lg font-black text-slate-800">6.00 Baht</span>
                                 </div>
                             </div>
                         </div>
@@ -319,9 +303,8 @@
         const amount1 = 3; const price1 = 45750;
         const amount2 = 2; const price2 = 61460;
         const amount3 = 1; const price3 = 67550;
-        const amount4 = 1; const price4 = 65170;
-        const totalAmount = amount1 + amount2 + amount3 + amount4;
-        const totalCost = (price1 * amount1) + (price2 * amount2) + (price3 * amount3) + (price4 * amount4);
+        const totalAmount = amount1 + amount2 + amount3;
+        const totalCost = (price1 * amount1) + (price2 * amount2) + (price3 * amount3);
 
         const buyPriceEl = document.getElementById('buyPrice');
         const sellPriceEl = document.getElementById('sellPrice');
