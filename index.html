@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thai Gold API Profit Tracker</title>
+    <title>Thai Gold Portfolio Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -19,6 +20,11 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
+            transition: background-color .3s ease, color .3s ease;
+        }
+
+        html.dark body {
+            background-color: #0f172a;
         }
 
         .gold-gradient {
@@ -28,17 +34,9 @@
         }
 
         @keyframes gradientMove {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .card-blur {
@@ -47,39 +45,56 @@
             -webkit-backdrop-filter: blur(12px);
         }
 
+        html.dark .card-blur {
+            background: rgba(30, 41, 59, 0.85);
+        }
+
+        html.dark .plain-card {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+
+        html.dark .text-slate-800, html.dark .text-slate-700 { color: #f1f5f9 !important; }
+        html.dark .text-slate-500, html.dark .text-slate-400 { color: #94a3b8 !important; }
+        html.dark .border-slate-100, html.dark .border-slate-200 { border-color: #334155 !important; }
+        html.dark .bg-slate-50, html.dark .bg-slate-100 { background-color: #1e293b !important; }
+        html.dark .bg-amber-100 { background-color: rgba(191,149,63,0.2) !important; }
+        html.dark input { background-color: #1e293b !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+        html.dark ::placeholder { color: #64748b !important; }
+
         .text-pop {
-            text-shadow:
-                0 4px 12px rgba(0, 0, 0, 0.25),
-                0 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .profit-positive {
-            color: #ffffff;
-        }
+        .profit-positive { color: #ffffff; }
+        .profit-negative { color: #ffe4e6; }
 
-        .profit-negative {
-            color: #ffe4e6;
-        }
+        .transition-all-custom { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .transition-all-custom {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        html, body { overscroll-behavior-y: contain; }
 
-        html,
-        body {
-            overscroll-behavior-y: contain;
-        }
-
-        /* Hide arrows on number inputs */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
+        input[type="number"] { -moz-appearance: textfield; }
 
-        input[type="number"] {
-            -moz-appearance: textfield;
+        .skeleton {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%);
+            background-size: 400% 100%;
+            animation: shimmer 1.4s ease infinite;
+            border-radius: 8px;
+            color: transparent !important;
         }
+        @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+        .toggle-pill {
+            transition: all .25s ease;
+        }
+
+        .fade-in { animation: fadeIn .4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 
@@ -87,82 +102,81 @@
     <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
         <div class="w-full max-w-4xl space-y-6 lg:space-y-8">
 
-            <header class="text-center space-y-2 mb-2">
-                <div
-                    class="inline-flex p-3 rounded-2xl gold-gradient shadow-lg mb-2 transform transition hover:scale-105">
+            <header class="text-center space-y-2 mb-2 relative">
+                <button id="themeToggle" title="Toggle dark mode"
+                    class="absolute right-0 top-0 w-10 h-10 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition-all">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="inline-flex p-3 rounded-2xl gold-gradient shadow-lg mb-2 transform transition hover:scale-105">
                     <i class="fas fa-coins text-2xl sm:text-3xl text-white drop-shadow-md"></i>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Gold Portfolio Tracker
-                </h1>
-                <p class="text-slate-500 text-sm sm:text-base font-medium">Real-time THB Valuation & Profit Analysis</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Gold Portfolio Tracker</h1>
+                <p class="text-slate-500 text-sm sm:text-base font-medium">ราคาทองคำไทย (สมาคมค้าทองคำ) แบบเรียลไทม์ · หน่วยเงินบาท (THB)</p>
             </header>
+
+            <div id="cacheBanner" class="hidden bg-amber-100 border border-amber-300 text-amber-800 text-xs font-bold rounded-2xl px-4 py-3 flex items-center gap-2">
+                <i class="fas fa-triangle-exclamation"></i>
+                <span id="cacheBannerText">Showing cached price</span>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
                 <div class="lg:col-span-7 space-y-6">
 
-                    <div
-                        class="card-blur rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border border-white relative overflow-hidden transition-all-custom hover:shadow-amber-100/50">
-                        <div class="flex justify-between items-center mb-8">
+                    <div class="card-blur rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border border-white relative overflow-hidden transition-all-custom hover:shadow-amber-100/50">
+                        <div class="flex justify-between items-start mb-6 gap-3">
                             <div class="space-y-1">
-                                <span
-                                    class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    Calculated Live Market Price
+                                <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-2">
+                                    <span id="liveDot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    <span id="liveLabel">สมาคมค้าทองคำแห่งประเทศไทย</span>
                                 </span>
-                                <div class="flex flex-col">
-                                    <h2 id="lastUpdated" class="text-xs sm:text-sm text-slate-400 font-medium italic">
-                                        Syncing data...</h2>
-                                    <h2 id="syncTime"
-                                        class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight">
-                                    </h2>
-                                </div>
+                                <h2 id="lastUpdated" class="text-xs sm:text-sm text-slate-400 font-medium italic">กำลังซิงค์ข้อมูล...</h2>
+                                <h2 id="syncTime" class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight"></h2>
                             </div>
-                            <button id="refreshBtn"
-                                class="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-600 hover:bg-amber-500 hover:text-white transition-all active:scale-90 shadow-sm group"
-                                title="Fetch API Data">
-                                <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-500"
-                                    id="refreshIcon"></i>
-                            </button>
+                            <div class="flex flex-col items-end gap-2">
+                                <button id="refreshBtn"
+                                    class="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-600 hover:bg-amber-500 hover:text-white transition-all active:scale-90 shadow-sm group"
+                                    title="Refresh now">
+                                    <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-500" id="refreshIcon"></i>
+                                </button>
+                                <span id="countdownText" class="text-[10px] text-slate-400 font-bold">อัปเดตใน 60s</span>
+                            </div>
+                        </div>
+
+                        <div class="flex bg-slate-100 rounded-2xl p-1 mb-6 text-xs sm:text-sm font-bold">
+                            <button data-type="gold_bar" class="price-type-btn toggle-pill flex-1 py-2.5 rounded-xl">ทองคำแท่ง 96.5%</button>
+                            <button data-type="gold" class="price-type-btn toggle-pill flex-1 py-2.5 rounded-xl">ทองรูปพรรณ 96.5%</button>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
-                            <div
-                                class="bg-rose-50/60 p-5 rounded-3xl border border-rose-100 flex flex-col items-center justify-center text-center">
-                                <p
-                                    class="text-[10px] sm:text-xs text-rose-500 font-bold uppercase mb-2 tracking-tighter">
-                                    Buy (รับซื้อ)</p>
-                                <p id="buyPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-                                    ---</p>
+                            <div class="bg-rose-50/60 p-5 rounded-3xl border border-rose-100 flex flex-col items-center justify-center text-center relative">
+                                <p class="text-[10px] sm:text-xs text-rose-500 font-bold uppercase mb-2 tracking-tighter">Buy (รับซื้อ)</p>
+                                <p id="buyPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">---</p>
+                                <span id="buyTrend" class="text-[10px] font-bold mt-1"></span>
                             </div>
-                            <div
-                                class="bg-emerald-50/60 p-5 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center">
-                                <p
-                                    class="text-[10px] sm:text-xs text-emerald-500 font-bold uppercase mb-2 tracking-tighter">
-                                    Sell (ขายออก)</p>
-                                <p id="sellPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-                                    ---</p>
+                            <div class="bg-emerald-50/60 p-5 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center relative">
+                                <p class="text-[10px] sm:text-xs text-emerald-500 font-bold uppercase mb-2 tracking-tighter">Sell (ขายออก)</p>
+                                <p id="sellPrice" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">---</p>
+                                <span id="sellTrend" class="text-[10px] font-bold mt-1"></span>
                             </div>
                         </div>
 
                         <div class="pt-6 border-t border-slate-200/60">
                             <div class="flex items-center justify-between mb-3">
-                                <span
-                                    class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                     <i class="fas fa-edit"></i> Manual Override
                                 </span>
+                                <button id="resumeLiveBtn" class="hidden text-[10px] font-bold text-amber-600 hover:underline">
+                                    <i class="fas fa-satellite-dish"></i> Resume Live
+                                </button>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <input type="number" id="manualBuy"
-                                        class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition-all placeholder-slate-300"
-                                        placeholder="Custom Buy ฿">
-                                </div>
-                                <div>
-                                    <input type="number" id="manualSell"
-                                        class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all placeholder-slate-300"
-                                        placeholder="Custom Sell ฿">
-                                </div>
+                                <input type="number" id="manualBuy"
+                                    class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-rose-400/50 transition-all placeholder-slate-300"
+                                    placeholder="Custom Buy ฿">
+                                <input type="number" id="manualSell"
+                                    class="w-full bg-white/60 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all placeholder-slate-300"
+                                    placeholder="Custom Sell ฿">
                             </div>
                             <button id="applyManualBtn"
                                 class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white text-xs sm:text-sm font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
@@ -171,37 +185,32 @@
                         </div>
                     </div>
 
-                    <div
-                        class="gold-gradient rounded-[2.5rem] p-8 sm:p-10 shadow-2xl text-white relative overflow-hidden group">
-                        <div
-                            class="absolute -top-10 -right-10 bg-white/10 blur-3xl w-48 h-48 rounded-full group-hover:scale-110 transition-transform duration-700">
-                        </div>
+                    <div class="gold-gradient rounded-[2.5rem] p-8 sm:p-10 shadow-2xl text-white relative overflow-hidden group">
+                        <div class="absolute -top-10 -right-10 bg-white/10 blur-3xl w-48 h-48 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
 
                         <div class="relative z-10 text-pop">
-                            <p class="text-xs sm:text-sm opacity-90 font-bold uppercase tracking-[0.2em] mb-3">Net
-                                Profit / Loss Status</p>
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-xs sm:text-sm opacity-90 font-bold uppercase tracking-[0.2em]">Net Profit / Loss</p>
+                                <span id="profitPct" class="text-xs sm:text-sm font-extrabold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">0.00%</span>
+                            </div>
                             <div class="flex items-center gap-4 sm:gap-6 mb-10">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
+                                <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
                                     <i id="profitIcon" class="fas text-3xl sm:text-4xl"></i>
                                 </div>
                                 <div class="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                                    <span class="text-5xl sm:text-7xl font-black tracking-tighter"
-                                        id="totalProfit">0.00</span>
+                                    <span class="text-5xl sm:text-7xl font-black tracking-tighter" id="totalProfit">0.00</span>
                                     <span class="text-xl sm:text-2xl font-bold opacity-80">THB</span>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-white/20">
                                 <div class="space-y-1">
-                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Current
-                                        Value</span>
+                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Current Value</span>
                                     <p id="currentValue" class="text-xl sm:text-2xl font-extrabold">฿0</p>
                                 </div>
                                 <div class="space-y-1">
-                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Initial
-                                        Cost</span>
-                                    <p id="initialCost" class="text-xl sm:text-2xl font-extrabold">฿325,340</p>
+                                    <span class="text-[10px] uppercase font-bold opacity-70 tracking-widest">Initial Cost</span>
+                                    <p id="initialCost" class="text-xl sm:text-2xl font-extrabold">฿0</p>
                                 </div>
                             </div>
                         </div>
@@ -209,70 +218,36 @@
                 </div>
 
                 <div class="lg:col-span-5 space-y-6">
-                    <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 h-full">
-                        <div class="flex items-center gap-3 mb-8">
-                            <div class="w-1.5 h-6 bg-amber-400 rounded-full"></div>
-                            <h3 class="text-xs sm:text-sm font-extrabold text-slate-400 uppercase tracking-widest">Asset
-                                Allocation</h3>
+                    <div class="plain-card bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl border border-slate-100 h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1.5 h-6 bg-amber-400 rounded-full"></div>
+                                <h3 class="text-xs sm:text-sm font-extrabold text-slate-400 uppercase tracking-widest">Asset Allocation</h3>
+                            </div>
+                            <button id="resetPortfolioBtn" class="text-[10px] text-slate-400 hover:text-rose-500 font-bold" title="Reset to default portfolio">
+                                <i class="fas fa-rotate-left"></i> Reset
+                            </button>
                         </div>
 
-                        <div class="space-y-8">
-                            <div
-                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
-                                        3฿</div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-slate-700">Batch A</span>
-                                        <span class="text-xs text-slate-400">@45,750 THB</span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-bold text-slate-800">฿137,250</p>
-                                </div>
+                        <div id="batchList" class="space-y-4"></div>
+
+                        <div class="mt-6 pt-6 border-t border-dashed border-slate-200 space-y-3">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Add Batch</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="number" id="newBatchWeight" step="0.25" min="0.25" placeholder="Weight (บาท)"
+                                    class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-amber-300">
+                                <input type="number" id="newBatchCost" step="1" min="0" placeholder="Cost/บาท ฿"
+                                    class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-center focus:outline-none focus:ring-2 focus:ring-amber-300">
                             </div>
+                            <button id="addBatchBtn" class="w-full bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
+                                <i class="fas fa-plus"></i> Add Batch
+                            </button>
+                        </div>
 
-                            <div class="h-px bg-slate-100"></div>
-
-                            <div
-                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
-                                        2฿</div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-slate-700">Batch B</span>
-                                        <span class="text-xs text-slate-400">@61,460 THB</span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-bold text-slate-800">฿122,920</p>
-                                </div>
-                            </div>
-
-                            <div class="h-px bg-slate-100"></div>
-                            <div
-                                class="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold">
-                                        1฿</div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-slate-700">Batch C</span>
-                                        <span class="text-xs text-slate-400">@67,550 THB</span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-bold text-slate-800">฿67,550</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-8 pt-8 border-t border-dashed border-slate-200">
-                                <div class="bg-slate-50 rounded-2xl p-4 flex justify-between items-center">
-                                    <span class="text-xs font-bold text-slate-500 uppercase">Total Weight</span>
-                                    <span class="text-lg font-black text-slate-800">6.00 Baht</span>
-                                </div>
+                        <div class="mt-6 pt-6 border-t border-dashed border-slate-200">
+                            <div class="bg-slate-50 rounded-2xl p-4 flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Total Weight</span>
+                                <span id="totalWeightDisplay" class="text-lg font-black text-slate-800">0.00 Baht</span>
                             </div>
                         </div>
                     </div>
@@ -284,137 +259,336 @@
             </div>
 
             <footer class="pt-8 pb-4 text-center space-y-2">
-                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data from
-                    Swissquote | Rates via ER-API</p>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Market Data from สมาคมค้าทองคำแห่งประเทศไทย (Gold Traders Association)</p>
             </footer>
         </div>
     </div>
 
     <script>
-        // Replace your existing XAU_API_URL line with this:
-        const targetUrl = encodeURIComponent("https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD");
-        const XAU_API_URL = `https://corsproxy.io/?${targetUrl}`;
-        // Free and reliable endpoint to fetch the required USD/THB exchange rate
-        const FX_API_URL = "https://open.er-api.com/v6/latest/USD";
+        // ===== Config =====
+        const GOLD_API_URL = "https://api.chnwt.dev/thai-gold-api/latest";
+        const PROXY_URL = (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        const REFRESH_INTERVAL_SEC = 60;
+        const STORAGE_PORTFOLIO = "gold_tracker_portfolio_v2";
+        const STORAGE_THEME = "gold_tracker_theme";
+        const STORAGE_CACHE = "gold_tracker_price_cache_v2";
 
-        // Formula Constant
-        const CONVERSION_CONSTANT = 0.4753;
+        const DEFAULT_PORTFOLIO = [
+            { id: 1, weight: 3, cost: 45750 },
+            { id: 2, weight: 2, cost: 61460 },
+            { id: 3, weight: 1, cost: 67550 }
+        ];
 
-        const amount1 = 3; const price1 = 45750;
-        const amount2 = 2; const price2 = 61460;
-        const amount3 = 1; const price3 = 67550;
-        const totalAmount = amount1 + amount2 + amount3;
-        const totalCost = (price1 * amount1) + (price2 * amount2) + (price3 * amount3);
+        // ===== State =====
+        let portfolio = loadPortfolio();
+        let priceType = "gold_bar"; // 'gold_bar' = ทองคำแท่ง, 'gold' = ทองรูปพรรณ
+        let lastApiData = null;     // full parsed API price object {gold:{buy,sell}, gold_bar:{buy,sell}}
+        let prevPrices = { buy: null, sell: null };
+        let manualMode = false;
+        let countdownHandle = null;
+        let countdownRemaining = REFRESH_INTERVAL_SEC;
 
+        // ===== DOM refs =====
         const buyPriceEl = document.getElementById('buyPrice');
         const sellPriceEl = document.getElementById('sellPrice');
+        const buyTrendEl = document.getElementById('buyTrend');
+        const sellTrendEl = document.getElementById('sellTrend');
         const profitEl = document.getElementById('totalProfit');
+        const profitPctEl = document.getElementById('profitPct');
         const profitIcon = document.getElementById('profitIcon');
         const currentValueEl = document.getElementById('currentValue');
         const initialCostEl = document.getElementById('initialCost');
         const lastUpdatedEl = document.getElementById('lastUpdated');
         const syncTimeEl = document.getElementById('syncTime');
+        const countdownText = document.getElementById('countdownText');
         const refreshBtn = document.getElementById('refreshBtn');
         const refreshIcon = document.getElementById('refreshIcon');
         const statusBox = document.getElementById('statusBox');
+        const cacheBanner = document.getElementById('cacheBanner');
+        const cacheBannerText = document.getElementById('cacheBannerText');
+        const resumeLiveBtn = document.getElementById('resumeLiveBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const batchListEl = document.getElementById('batchList');
+        const totalWeightDisplay = document.getElementById('totalWeightDisplay');
 
-        // Manual override elements
         const applyManualBtn = document.getElementById('applyManualBtn');
         const manualBuyInput = document.getElementById('manualBuy');
         const manualSellInput = document.getElementById('manualSell');
 
-        async function fetchGoldData() {
+        // ===== Theme =====
+        function initTheme() {
+            const saved = localStorage.getItem(STORAGE_THEME);
+            const isDark = saved === 'dark';
+            document.documentElement.classList.toggle('dark', isDark);
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem(STORAGE_THEME, isDark ? 'dark' : 'light');
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // ===== Portfolio persistence =====
+        function loadPortfolio() {
+            try {
+                const raw = localStorage.getItem(STORAGE_PORTFOLIO);
+                if (raw) return JSON.parse(raw);
+            } catch (e) {}
+            localStorage.setItem(STORAGE_PORTFOLIO, JSON.stringify(DEFAULT_PORTFOLIO));
+            return JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO));
+        }
+        function savePortfolio() {
+            localStorage.setItem(STORAGE_PORTFOLIO, JSON.stringify(portfolio));
+        }
+
+        function getTotals() {
+            const totalAmount = portfolio.reduce((s, b) => s + Number(b.weight || 0), 0);
+            const totalCost = portfolio.reduce((s, b) => s + (Number(b.weight || 0) * Number(b.cost || 0)), 0);
+            return { totalAmount, totalCost };
+        }
+
+        function renderPortfolio() {
+            batchListEl.innerHTML = '';
+            portfolio.forEach((batch, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-3 p-2 rounded-2xl hover:bg-slate-50 transition-colors fade-in';
+                row.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs shrink-0">${batch.weight}฿</div>
+                    <div class="flex-1 grid grid-cols-2 gap-2">
+                        <input type="number" step="0.25" min="0.25" value="${batch.weight}" data-id="${batch.id}" data-field="weight"
+                            class="batch-input bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-amber-300" title="Weight (บาท)">
+                        <input type="number" step="1" min="0" value="${batch.cost}" data-id="${batch.id}" data-field="cost"
+                            class="batch-input bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-amber-300" title="Cost per บาท (฿)">
+                    </div>
+                    <button class="delete-batch-btn w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors shrink-0" data-id="${batch.id}" title="Remove batch">
+                        <i class="fas fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                batchListEl.appendChild(row);
+            });
+
+            const { totalAmount } = getTotals();
+            totalWeightDisplay.innerText = `${totalAmount.toFixed(2)} Baht`;
+
+            document.querySelectorAll('.batch-input').forEach(inp => {
+                inp.addEventListener('change', (e) => {
+                    const id = Number(e.target.dataset.id);
+                    const field = e.target.dataset.field;
+                    const val = parseFloat(e.target.value);
+                    if (isNaN(val) || val < 0) { showStatus('Please enter a valid number', 'error'); return; }
+                    const batch = portfolio.find(b => b.id === id);
+                    if (batch) { batch[field] = val; savePortfolio(); renderPortfolio(); recomputeWithLastPrices(); }
+                });
+            });
+            document.querySelectorAll('.delete-batch-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = Number(e.currentTarget.dataset.id);
+                    portfolio = portfolio.filter(b => b.id !== id);
+                    savePortfolio();
+                    renderPortfolio();
+                    recomputeWithLastPrices();
+                });
+            });
+        }
+
+        document.getElementById('addBatchBtn').addEventListener('click', () => {
+            const weightInput = document.getElementById('newBatchWeight');
+            const costInput = document.getElementById('newBatchCost');
+            const weight = parseFloat(weightInput.value);
+            const cost = parseFloat(costInput.value);
+            if (isNaN(weight) || weight <= 0 || isNaN(cost) || cost < 0) {
+                showStatus('Enter a valid weight and cost to add a batch', 'error');
+                return;
+            }
+            const newId = portfolio.length ? Math.max(...portfolio.map(b => b.id)) + 1 : 1;
+            portfolio.push({ id: newId, weight, cost });
+            savePortfolio();
+            renderPortfolio();
+            recomputeWithLastPrices();
+            weightInput.value = '';
+            costInput.value = '';
+            showStatus('Batch added', 'success');
+        });
+
+        document.getElementById('resetPortfolioBtn').addEventListener('click', () => {
+            if (!confirm('Reset portfolio to default sample batches?')) return;
+            portfolio = JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO));
+            savePortfolio();
+            renderPortfolio();
+            recomputeWithLastPrices();
+            showStatus('Portfolio reset', 'success');
+        });
+
+        // ===== Price type toggle =====
+        function renderPriceTypeButtons() {
+            document.querySelectorAll('.price-type-btn').forEach(btn => {
+                const active = btn.dataset.type === priceType;
+                btn.className = `price-type-btn toggle-pill flex-1 py-2.5 rounded-xl ${active ? 'bg-white shadow text-amber-600' : 'text-slate-400 hover:text-slate-600'}`;
+            });
+        }
+        document.querySelectorAll('.price-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                priceType = btn.dataset.type;
+                renderPriceTypeButtons();
+                if (lastApiData) applyLivePrices(lastApiData, false);
+            });
+        });
+
+        // ===== Fetching =====
+        async function fetchJson(url) {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) throw new Error('Network error: ' + res.status);
+            return res.json();
+        }
+
+        async function fetchGoldData(isManualClick = false) {
             setLoading(true);
-            const retryDelays = [1000, 2000, 4000];
+            manualMode = false;
+            resumeLiveBtn.classList.add('hidden');
 
-            for (let i = 0; i <= retryDelays.length; i++) {
+            const attempts = [
+                () => fetchJson(GOLD_API_URL),
+                () => fetchJson(GOLD_API_URL),
+                () => fetchJson(PROXY_URL(GOLD_API_URL))
+            ];
+
+            for (let i = 0; i < attempts.length; i++) {
                 try {
-                    // Fetch global XAU/USD Spot Price from Swissquote
-                    const xauResponse = await fetch(XAU_API_URL);
-                    if (!xauResponse.ok) throw new Error('XAU API Network response error');
-                    const xauData = await xauResponse.json();
+                    const data = await attempts[i]();
+                    if (data && data.status === 'success' && data.response && data.response.price) {
+                        const price = data.response.price;
+                        lastApiData = price;
 
-                    // Fetch USD/THB Exchange Rate
-                    const fxResponse = await fetch(FX_API_URL);
-                    if (!fxResponse.ok) throw new Error('FX API Network response error');
-                    const fxData = await fxResponse.json();
+                        const cachePayload = {
+                            price,
+                            updateDate: data.response.update_date || '',
+                            updateTime: data.response.update_time || '',
+                            fetchedAt: Date.now()
+                        };
+                        localStorage.setItem(STORAGE_CACHE, JSON.stringify(cachePayload));
 
-                    if (xauData && xauData[0] && fxData && fxData.rates) {
-                        // Extract standard spread profile prices from Swissquote response
-                        const standardProfile = xauData[0].spreadProfilePrices.find(p => p.spreadProfile === 'standard') || xauData[0].spreadProfilePrices[0];
-
-                        const goldSpotBid = parseFloat(standardProfile.bid);
-                        const goldSpotAsk = parseFloat(standardProfile.ask);
-                        const usdThbRate = parseFloat(fxData.rates.THB);
-
-                        if (!isNaN(goldSpotBid) && !isNaN(goldSpotAsk) && !isNaN(usdThbRate)) {
-                            // Apply the Conversion Formula
-                            const thbGoldBahtBid = goldSpotBid * CONVERSION_CONSTANT * usdThbRate;
-                            const thbGoldBahtAsk = goldSpotAsk * CONVERSION_CONSTANT * usdThbRate;
-
-                            // Populate the manual inputs with the calculated live price
-                            manualBuyInput.value = thbGoldBahtBid.toFixed(0);
-                            manualSellInput.value = thbGoldBahtAsk.toFixed(0);
-
-                            // Display the base values on the UI for clarity
-                            lastUpdatedEl.innerText = `Spot: $${goldSpotAsk.toFixed(2)} | FX: ฿${usdThbRate.toFixed(3)}`;
-
-                            updateDashboard(thbGoldBahtBid, thbGoldBahtAsk);
-                            setLoading(false);
-                            showStatus("Prices calculated & synced successfully", "success");
-                            return;
-                        }
+                        cacheBanner.classList.add('hidden');
+                        applyLivePrices(price, true, data.response.update_date, data.response.update_time);
+                        setLoading(false);
+                        resetCountdown();
+                        showStatus('อัปเดตราคาทองสำเร็จ', 'success');
+                        return;
                     }
-                    throw new Error('API format mismatch');
-                } catch (error) {
-                    if (i < retryDelays.length) {
-                        await new Promise(res => setTimeout(res, retryDelays[i]));
+                    throw new Error('Unexpected API response shape');
+                } catch (err) {
+                    if (i < attempts.length - 1) {
+                        await new Promise(r => setTimeout(r, 800 * (i + 1)));
                     } else {
                         setLoading(false);
-                        showStatus("Connection failed. Retrying later...", "error");
+                        useCachedPrice();
+                        showStatus('เชื่อมต่อ API ไม่ได้ กำลังใช้ราคาล่าสุดที่บันทึกไว้', 'error');
+                        resetCountdown();
                     }
                 }
             }
         }
 
-        // Handle Manual Price Submission
+        function useCachedPrice() {
+            try {
+                const raw = localStorage.getItem(STORAGE_CACHE);
+                if (!raw) return;
+                const cached = JSON.parse(raw);
+                lastApiData = cached.price;
+                const when = new Date(cached.fetchedAt).toLocaleString('th-TH', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+                cacheBannerText.innerText = `การเชื่อมต่อสดใช้งานไม่ได้ — แสดงราคาที่บันทึกไว้ล่าสุดเมื่อ ${when}`;
+                cacheBanner.classList.remove('hidden');
+                applyLivePrices(cached.price, false, cached.updateDate, cached.updateTime);
+            } catch (e) {}
+        }
+
+        function applyLivePrices(price, animate, updateDate, updateTime) {
+            const typeData = price[priceType] || price['gold_bar'] || price['gold'];
+            if (!typeData) return;
+            const buy = parseFloat(String(typeData.buy).replace(/,/g, ''));
+            const sell = parseFloat(String(typeData.sell).replace(/,/g, ''));
+            if (isNaN(buy) || isNaN(sell)) return;
+
+            manualBuyInput.value = Math.round(buy);
+            manualSellInput.value = Math.round(sell);
+
+            if (updateDate || updateTime) {
+                lastUpdatedEl.innerText = `ประกาศราคา: ${updateDate || ''} ${updateTime || ''}`.trim();
+            }
+            const now = new Date();
+            syncTimeEl.innerText = `Local Sync: ${now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+            renderTrend(buyTrendEl, prevPrices.buy, buy);
+            renderTrend(sellTrendEl, prevPrices.sell, sell);
+            prevPrices = { buy, sell };
+
+            updateDashboard(buy, sell, animate);
+        }
+
+        function renderTrend(el, prevVal, newVal) {
+            if (prevVal === null || prevVal === newVal) { el.innerText = ''; return; }
+            if (newVal > prevVal) {
+                el.innerHTML = '<i class="fas fa-caret-up"></i> ' + (newVal - prevVal).toFixed(0);
+                el.className = 'text-[10px] font-bold mt-1 text-emerald-500';
+            } else {
+                el.innerHTML = '<i class="fas fa-caret-down"></i> ' + (prevVal - newVal).toFixed(0);
+                el.className = 'text-[10px] font-bold mt-1 text-rose-500';
+            }
+        }
+
+        function recomputeWithLastPrices() {
+            const buy = parseFloat(String(buyPriceEl.innerText).replace(/[฿,]/g, ''));
+            const sell = parseFloat(String(sellPriceEl.innerText).replace(/[฿,]/g, ''));
+            if (!isNaN(buy) && !isNaN(sell)) updateDashboard(buy, sell, false);
+        }
+
+        // ===== Manual override =====
         applyManualBtn.addEventListener('click', () => {
             const customBuy = parseFloat(manualBuyInput.value);
             const customSell = parseFloat(manualSellInput.value);
-
             if (isNaN(customBuy) || isNaN(customSell)) {
-                showStatus("Please enter valid numbers for both Buy and Sell.", "error");
+                showStatus('Please enter valid numbers for both Buy and Sell.', 'error');
                 return;
             }
-
-            lastUpdatedEl.innerText = "Custom Input Applied";
-            updateDashboard(customBuy, customSell);
-            showStatus("Custom prices applied", "success");
+            manualMode = true;
+            resumeLiveBtn.classList.remove('hidden');
+            lastUpdatedEl.innerText = 'Custom Input Applied (live updates paused)';
+            updateDashboard(customBuy, customSell, true);
+            showStatus('Custom prices applied', 'success');
         });
 
-        function updateDashboard(buy, sell) {
+        resumeLiveBtn.addEventListener('click', () => {
+            manualMode = false;
+            resumeLiveBtn.classList.add('hidden');
+            fetchGoldData();
+        });
+
+        // ===== Dashboard =====
+        function updateDashboard(buy, sell, animate = true) {
+            const { totalAmount, totalCost } = getTotals();
             const portfolioValue = buy * totalAmount;
             const profit = portfolioValue - totalCost;
+            const pct = totalCost > 0 ? (profit / totalCost) * 100 : 0;
 
-            // Rounding to nearest Baht for display (Thai Gold is usually displayed as whole numbers)
-            buyPriceEl.innerText = `฿${Math.round(buy).toLocaleString()}`;
-            sellPriceEl.innerText = `฿${Math.round(sell).toLocaleString()}`;
+            buyPriceEl.innerText = `฿${Math.round(buy).toLocaleString('th-TH')}`;
+            sellPriceEl.innerText = `฿${Math.round(sell).toLocaleString('th-TH')}`;
 
-            animateValue(profitEl, parseFloat(profitEl.innerText.replace(/,/g, '')) || 0, profit, 1000);
-
-            currentValueEl.innerText = `฿${portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-            initialCostEl.innerText = `฿${totalCost.toLocaleString()}`;
-
-            const now = new Date();
-            syncTimeEl.innerText = `Local Sync: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-
-            // Handle Icon and Color logic
-            if (profit >= 0) {
-                profitEl.className = "text-5xl sm:text-7xl font-black tracking-tighter profit-positive text-pop";
-                profitIcon.className = "fas fa-arrow-trend-up text-emerald-400 drop-shadow-md";
+            const startVal = parseFloat(String(profitEl.innerText).replace(/,/g, '')) || 0;
+            if (animate) {
+                animateValue(profitEl, startVal, profit, 800);
             } else {
-                profitEl.className = "text-5xl sm:text-7xl font-black tracking-tighter profit-negative text-pop";
-                profitIcon.className = "fas fa-arrow-trend-down text-rose-400 drop-shadow-md";
+                profitEl.innerHTML = profit.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            profitPctEl.innerText = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+            currentValueEl.innerText = `฿${portfolioValue.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
+            initialCostEl.innerText = `฿${totalCost.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
+
+            if (profit >= 0) {
+                profitEl.className = 'text-5xl sm:text-7xl font-black tracking-tighter profit-positive text-pop';
+                profitIcon.className = 'fas fa-arrow-trend-up text-emerald-400 drop-shadow-md';
+            } else {
+                profitEl.className = 'text-5xl sm:text-7xl font-black tracking-tighter profit-negative text-pop';
+                profitIcon.className = 'fas fa-arrow-trend-down text-rose-400 drop-shadow-md';
             }
         }
 
@@ -424,21 +598,38 @@
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 const val = progress * (end - start) + start;
-                obj.innerHTML = val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
+                obj.innerHTML = val.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
         }
 
+        // ===== Countdown / auto-refresh =====
+        function resetCountdown() {
+            countdownRemaining = REFRESH_INTERVAL_SEC;
+            if (countdownHandle) clearInterval(countdownHandle);
+            countdownHandle = setInterval(() => {
+                if (manualMode) { countdownText.innerText = 'Live paused (manual)'; return; }
+                countdownRemaining--;
+                if (countdownRemaining <= 0) {
+                    fetchGoldData();
+                } else {
+                    countdownText.innerText = `อัปเดตใน ${countdownRemaining}s`;
+                }
+            }, 1000);
+        }
+
+        // ===== UI helpers =====
         function setLoading(isLoading) {
             if (isLoading) {
                 refreshIcon.classList.add('fa-spin');
                 refreshBtn.classList.add('opacity-50', 'pointer-events-none');
+                if (buyPriceEl.innerText === '---') { buyPriceEl.classList.add('skeleton'); sellPriceEl.classList.add('skeleton'); }
             } else {
                 refreshIcon.classList.remove('fa-spin');
                 refreshBtn.classList.remove('opacity-50', 'pointer-events-none');
+                buyPriceEl.classList.remove('skeleton');
+                sellPriceEl.classList.remove('skeleton');
             }
         }
 
@@ -446,7 +637,6 @@
             statusBox.innerText = msg;
             const isError = type === 'error';
             statusBox.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-xs text-center p-4 rounded-2xl text-xs font-bold shadow-2xl transition-all duration-500 transform translate-y-0 opacity-100 ${isError ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`;
-
             statusBox.classList.remove('hidden');
             setTimeout(() => {
                 statusBox.classList.add('translate-y-10', 'opacity-0');
@@ -454,8 +644,13 @@
             }, 3000);
         }
 
-        refreshBtn.addEventListener('click', fetchGoldData);
-        window.onload = fetchGoldData;
+        // ===== Init =====
+        refreshBtn.addEventListener('click', () => fetchGoldData(true));
+
+        initTheme();
+        renderPriceTypeButtons();
+        renderPortfolio();
+        fetchGoldData();
     </script>
 </body>
 
