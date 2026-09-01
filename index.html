@@ -39,6 +39,34 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* ===== Loader Animations ===== */
+        .loader-bounce {
+            animation: loaderBounce 2s infinite ease-in-out;
+        }
+        
+        @keyframes loaderBounce {
+            0%, 100% { transform: translateY(-8%); }
+            50% { transform: translateY(8%); }
+        }
+
+        .loader-progress {
+            width: 0%;
+            animation: progressIndeterminate 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes progressIndeterminate {
+            0% { width: 20%; transform: translateX(-50%); }
+            100% { width: 50%; transform: translateX(150%); }
+        }
+
+        .loader-exit {
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        /* ============================= */
+
         .card-blur {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -99,6 +127,29 @@
 </head>
 
 <body class="text-slate-900 antialiased">
+    <!-- ===== Full Screen Loader ===== -->
+    <div id="appLoader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md transition-all duration-700 ease-in-out">
+        <div class="relative">
+            <!-- Glowing aura behind icon -->
+            <div class="absolute -inset-4 bg-amber-400/40 blur-2xl rounded-full animate-pulse"></div>
+            <!-- Bouncing central icon -->
+            <div class="relative inline-flex p-6 sm:p-8 rounded-[2rem] gold-gradient shadow-2xl mb-8 loader-bounce">
+                <i class="fas fa-coins text-5xl sm:text-6xl text-white drop-shadow-xl"></i>
+            </div>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-2 animate-pulse">
+            Syncing Portfolio...
+        </h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-8">
+            กำลังดึงข้อมูลราคาทองคำล่าสุด
+        </p>
+        <!-- Custom styled progress bar -->
+        <div class="w-48 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
+            <div class="h-full bg-amber-500 rounded-full loader-progress"></div>
+        </div>
+    </div>
+    <!-- ============================== -->
+
     <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
         <div class="w-full max-w-4xl space-y-6 lg:space-y-8">
 
@@ -280,15 +331,17 @@
         ];
 
         // ===== State =====
+        let isFirstLoad = true;
         let portfolio = loadPortfolio();
-        let priceType = "gold_bar"; // 'gold_bar' = ทองคำแท่ง, 'gold' = ทองรูปพรรณ
-        let lastApiData = null;     // full parsed API price object {gold:{buy,sell}, gold_bar:{buy,sell}}
+        let priceType = "gold_bar"; 
+        let lastApiData = null;     
         let prevPrices = { buy: null, sell: null };
         let manualMode = false;
         let countdownHandle = null;
         let countdownRemaining = REFRESH_INTERVAL_SEC;
 
         // ===== DOM refs =====
+        const appLoader = document.getElementById('appLoader');
         const buyPriceEl = document.getElementById('buyPrice');
         const sellPriceEl = document.getElementById('sellPrice');
         const buyTrendEl = document.getElementById('buyTrend');
@@ -327,6 +380,20 @@
             localStorage.setItem(STORAGE_THEME, isDark ? 'dark' : 'light');
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
+
+        // Immediately apply theme before rendering
+        initTheme();
+
+        // ===== Loader Hide Logic =====
+        function hideAppLoader() {
+            if (isFirstLoad && appLoader) {
+                isFirstLoad = false;
+                setTimeout(() => {
+                    appLoader.classList.add('loader-exit');
+                    setTimeout(() => appLoader.remove(), 700); // Clean up from DOM
+                }, 500); // Small delay to guarantee visual smooth transition after data arrives
+            }
+        }
 
         // ===== Portfolio persistence =====
         function loadPortfolio() {
@@ -471,7 +538,13 @@
                         applyLivePrices(price, true, data.response.update_date, data.response.update_time);
                         setLoading(false);
                         resetCountdown();
-                        showStatus('อัปเดตราคาทองสำเร็จ', 'success');
+                        
+                        hideAppLoader(); // Dismiss initial full screen loader on success
+                        
+                        // Don't show toast on initial background load
+                        if (isManualClick || !isFirstLoad) {
+                            showStatus('อัปเดตราคาทองสำเร็จ', 'success');
+                        }
                         return;
                     }
                     throw new Error('Unexpected API response shape');
@@ -483,6 +556,8 @@
                         useCachedPrice();
                         showStatus('เชื่อมต่อ API ไม่ได้ กำลังใช้ราคาล่าสุดที่บันทึกไว้', 'error');
                         resetCountdown();
+                        
+                        hideAppLoader(); // Dismiss initial full screen loader even on failure
                     }
                 }
             }
@@ -647,7 +722,6 @@
         // ===== Init =====
         refreshBtn.addEventListener('click', () => fetchGoldData(true));
 
-        initTheme();
         renderPriceTypeButtons();
         renderPortfolio();
         fetchGoldData();
