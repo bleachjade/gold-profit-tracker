@@ -326,6 +326,7 @@
         const API_TIMEOUT_MS = 10000;      // Abort a single request after 10s
         const RETRY_DELAYS_MS = [1000, 2000];
         const API_COOLDOWN_MS = 5 * 60 * 1000; // Skip live calls for 5 min after total failure
+        const FALLBACK_API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=gold&vs_currencies=thb,usd";
 
         const DEFAULT_PORTFOLIO = [
             { id: 1, weight: 3, cost: 45750 },
@@ -521,7 +522,7 @@
         // Fetch the live price, trying direct then proxy with a short retry/backoff.
         // Returns the API payload, or null when every attempt failed or timed out.
         async function fetchLivePrice() {
-            const endpoints = [GOLD_API_URL, PROXY_URL(GOLD_API_URL)];
+            const endpoints = [GOLD_API_URL, PROXY_URL(GOLD_API_URL), FALLBACK_API_URL];
 
             for (const endpoint of endpoints) {
                 for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
@@ -529,6 +530,10 @@
                         const data = await fetchJson(endpoint);
                         if (data && data.status === 'success' && data.response && data.response.price) {
                             return data;
+                        }
+                        // Fallback API returns different shape: { gold: { thb: X, usd: Y } }
+                        if (data && data.gold && typeof data.gold.thb === 'number') {
+                            return { status: 'success', response: { price: data.gold } };
                         }
                         throw new Error('Unexpected API response shape');
                     } catch (err) {
@@ -565,16 +570,26 @@
                 lastApiData = price;
                 apiCooldownUntil = 0;
 
+                // Build cache payload from either API shape
+                let updateDate = '', updateTime = '';
+                if (data.response.update_date) {
+                    updateDate = data.response.update_date;
+                    updateTime = data.response.update_time || '';
+                } else if (data.gold) {
+                    updateDate = new Date().toISOString().split('T')[0];
+                    updateTime = new Date().toTimeString().slice(0,5);
+                }
+
                 const cachePayload = {
                     price,
-                    updateDate: data.response.update_date || '',
-                    updateTime: data.response.update_time || '',
+                    updateDate,
+                    updateTime,
                     fetchedAt: Date.now()
                 };
                 localStorage.setItem(STORAGE_CACHE, JSON.stringify(cachePayload));
 
                 cacheBanner.classList.add('hidden');
-                applyLivePrices(price, true, data.response.update_date, data.response.update_time);
+                applyLivePrices(price, true, updateDate, updateTime);
                 setLoading(false);
                 resetCountdown();
                 hideAppLoader();
