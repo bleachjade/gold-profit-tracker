@@ -323,6 +323,9 @@
         const STORAGE_PORTFOLIO = "gold_tracker_portfolio_v2";
         const STORAGE_THEME = "gold_tracker_theme";
         const STORAGE_CACHE = "gold_tracker_price_cache_v2";
+        const API_TIMEOUT_MS = 10000;      // Abort a single request after 10s
+        const RETRY_DELAYS_MS = [1000, 2000];
+        const API_COOLDOWN_MS = 5 * 60 * 1000; // Skip live calls for 5 min after total failure
 
         const DEFAULT_PORTFOLIO = [
             { id: 1, weight: 3, cost: 45750 },
@@ -339,6 +342,7 @@
         let manualMode = false;
         let countdownHandle = null;
         let countdownRemaining = REFRESH_INTERVAL_SEC;
+        let apiCooldownUntil = 0;         // timestamp when live API may be retried
 
         // ===== DOM refs =====
         const appLoader = document.getElementById('appLoader');
@@ -503,9 +507,39 @@
 
         // ===== Fetching =====
         async function fetchJson(url) {
-            const res = await fetch(url, { cache: 'no-store' });
-            if (!res.ok) throw new Error('Network error: ' + res.status);
-            return res.json();
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+            try {
+                const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                if (!res.ok) throw new Error('Network error: ' + res.status);
+                return await res.json();
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        // Fetch the live price, trying direct then proxy with a short retry/backoff.
+        // Returns the API payload, or null when every attempt failed or timed out.
+        async function fetchLivePrice() {
+            const endpoints = [GOLD_API_URL, PROXY_URL(GOLD_API_URL)];
+
+            for (const endpoint of endpoints) {
+                for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+                    try {
+                        const data = await fetchJson(endpoint);
+                        if (data && data.status === 'success' && data.response && data.response.price) {
+                            return data;
+                        }
+                        throw new Error('Unexpected API response shape');
+                    } catch (err) {
+                        const isLastAttempt = attempt === RETRY_DELAYS_MS.length && endpoint === endpoints[endpoints.length - 1];
+                        if (isLastAttempt) return null;
+                        const delay = RETRY_DELAYS_MS[Math.min(attempt, RETRY_DELAYS_MS.length - 1)];
+                        await new Promise(r => setTimeout(r, delay));
+                    }
+                }
+            }
+            return null;
         }
 
         async function fetchGoldData(isManualClick = false) {
@@ -513,67 +547,75 @@
             manualMode = false;
             resumeLiveBtn.classList.add('hidden');
 
-            const attempts = [
-                () => fetchJson(GOLD_API_URL),
-                () => fetchJson(GOLD_API_URL),
-                () => fetchJson(PROXY_URL(GOLD_API_URL))
-            ];
-
-            for (let i = 0; i < attempts.length; i++) {
-                try {
-                    const data = await attempts[i]();
-                    if (data && data.status === 'success' && data.response && data.response.price) {
-                        const price = data.response.price;
-                        lastApiData = price;
-
-                        const cachePayload = {
-                            price,
-                            updateDate: data.response.update_date || '',
-                            updateTime: data.response.update_time || '',
-                            fetchedAt: Date.now()
-                        };
-                        localStorage.setItem(STORAGE_CACHE, JSON.stringify(cachePayload));
-
-                        cacheBanner.classList.add('hidden');
-                        applyLivePrices(price, true, data.response.update_date, data.response.update_time);
-                        setLoading(false);
-                        resetCountdown();
-                        
-                        hideAppLoader(); // Dismiss initial full screen loader on success
-                        
-                        // Don't show toast on initial background load
-                        if (isManualClick || !isFirstLoad) {
-                            showStatus('อัปเดตราคาทองสำเร็จ', 'success');
-                        }
-                        return;
-                    }
-                    throw new Error('Unexpected API response shape');
-                } catch (err) {
-                    if (i < attempts.length - 1) {
-                        await new Promise(r => setTimeout(r, 800 * (i + 1)));
-                    } else {
-                        setLoading(false);
-                        useCachedPrice();
-                        showStatus('เชื่อมต่อ API ไม่ได้ กำลังใช้ราคาล่าสุดที่บันทึกไว้', 'error');
-                        resetCountdown();
-                        
-                        hideAppLoader(); // Dismiss initial full screen loader even on failure
-                    }
-                }
+            // Circuit breaker: while the API is known to be down, jump straight to cache
+            // so the page never sits waiting on a dead endpoint.
+            if (Date.now() < apiCooldownUntil) {
+                setLoading(false);
+                useCachedPrice();
+                resetCountdown();
+                hideAppLoader();
+                if (isManualClick) showStatus('API ไม่พร้อมใช้งาน กำลังแสดงราคาที่บันทึกไว้', 'error');
+                return;
             }
+
+            const data = await fetchLivePrice();
+
+            if (data) {
+                const price = data.response.price;
+                lastApiData = price;
+                apiCooldownUntil = 0;
+
+                const cachePayload = {
+                    price,
+                    updateDate: data.response.update_date || '',
+                    updateTime: data.response.update_time || '',
+                    fetchedAt: Date.now()
+                };
+                localStorage.setItem(STORAGE_CACHE, JSON.stringify(cachePayload));
+
+                cacheBanner.classList.add('hidden');
+                applyLivePrices(price, true, data.response.update_date, data.response.update_time);
+                setLoading(false);
+                resetCountdown();
+                hideAppLoader();
+
+                // Don't show toast on initial background load
+                if (isManualClick || !isFirstLoad) {
+                    showStatus('อัปเดตราคาทองสำเร็จ', 'success');
+                }
+                return;
+            }
+
+            // Every attempt failed: back off, fall back to cache, and always release the UI.
+            apiCooldownUntil = Date.now() + API_COOLDOWN_MS;
+            setLoading(false);
+            useCachedPrice();
+            showStatus('เชื่อมต่อ API ไม่ได้ กำลังใช้ราคาล่าสุดที่บันทึกไว้', 'error');
+            resetCountdown();
+            hideAppLoader();
         }
 
         function useCachedPrice() {
             try {
                 const raw = localStorage.getItem(STORAGE_CACHE);
-                if (!raw) return;
+                if (!raw) {
+                    // Nothing cached yet — show an explicit state instead of a blank page.
+                    buyPriceEl.innerText = 'N/A';
+                    sellPriceEl.innerText = 'N/A';
+                    lastUpdatedEl.innerText = 'ไม่มีข้อมูลราคาที่บันทึกไว้';
+                    return;
+                }
                 const cached = JSON.parse(raw);
                 lastApiData = cached.price;
                 const when = new Date(cached.fetchedAt).toLocaleString('th-TH', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
                 cacheBannerText.innerText = `การเชื่อมต่อสดใช้งานไม่ได้ — แสดงราคาที่บันทึกไว้ล่าสุดเมื่อ ${when}`;
                 cacheBanner.classList.remove('hidden');
                 applyLivePrices(cached.price, false, cached.updateDate, cached.updateTime);
-            } catch (e) {}
+            } catch (e) {
+                buyPriceEl.innerText = 'N/A';
+                sellPriceEl.innerText = 'N/A';
+                lastUpdatedEl.innerText = 'ข้อมูลราคาที่บันทึกไว้เสียหาย';
+            }
         }
 
         function applyLivePrices(price, animate, updateDate, updateTime) {
